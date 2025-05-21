@@ -26,10 +26,13 @@ jobs:
         id: changed-files
         run: |
           BEFORE_COMMIT="${{ github.event.before }}"
-          if [ -z "$BEFORE_COMMIT" ] || ! git cat-file -e "$BEFORE_COMMIT"^{commit}; then
-            BEFORE_COMMIT=$(git rev-parse HEAD~1)  # Use last commit as fallback
+
+          # Handle empty, zero SHA or invalid commit
+          if [ -z "$BEFORE_COMMIT" ] || [ "$BEFORE_COMMIT" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "$BEFORE_COMMIT"^{commit}; then
+            echo "Invalid or empty BEFORE_COMMIT, using first commit as fallback"
+            BEFORE_COMMIT=$(git rev-list --max-parents=0 HEAD)
           fi
-          
+
           CHANGED_FILES=$(git diff --name-only "$BEFORE_COMMIT" HEAD)
           echo "Detected changed files: $CHANGED_FILES"
 
@@ -79,8 +82,8 @@ jobs:
           fi
           
           echo "Executing Python script: $PYTHON_FILE"
-          # python3 "$PYTHON_FILE" < tests/test.py
           python -m tests.test
+
       - name: Run Java Tests
         if: ${{ env.language == 'Java' }}
         run: |
