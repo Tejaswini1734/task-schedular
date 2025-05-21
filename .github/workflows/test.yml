@@ -2,11 +2,11 @@ name: Run Code Tests
 
 on:
   push:
-    paths:
-      - "solutions/**"
+    # paths:
+    #   - "solutions/**"   # temporarily disabled for debugging
   pull_request:
-    paths:
-      - "tests/**"
+    # paths:
+    #   - "tests/**"       # temporarily disabled for debugging
 
 jobs:
   run-tests:
@@ -82,7 +82,7 @@ jobs:
           fi
           
           echo "Executing Python script: $PYTHON_FILE"
-          python -m tests.test
+          python tests/test.py   # Changed from python -m tests.test
 
       - name: Run Java Tests
         if: ${{ env.language == 'Java' }}
