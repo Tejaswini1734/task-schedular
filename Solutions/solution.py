@@ -4,7 +4,6 @@ def leastInterval(tasks, n):
     freq = list(Counter(tasks).values())
     max_freq = max(freq)
     max_count = freq.count(max_freq)
-    
     part_count = max_freq - 1
     part_length = n - (max_count - 1)
     empty_slots = part_count * part_length
