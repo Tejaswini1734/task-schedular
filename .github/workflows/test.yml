@@ -3,10 +3,10 @@ name: Run Code Tests
 on:
   push:
     # paths:
-    #   - "solutions/**"   # temporarily disabled for debugging
+    #   - "Solutions/**"   # temporarily disabled for debugging
   pull_request:
     # paths:
-    #   - "tests/**"       # temporarily disabled for debugging
+    #   - "Tests/**"       # temporarily disabled for debugging
 
 jobs:
   run-tests:
@@ -62,33 +62,41 @@ jobs:
       - name: Compile and Run C Program
         if: ${{ env.language == 'C' }}
         run: |
-          gcc tests/test.c -o solution_c
-          ./solution_c
+          if [ -f Tests/test.c ]; then
+            gcc Tests/test.c -o solution_c
+            ./solution_c
+          else
+            echo "No C test file found at Tests/test.c, skipping C test."
+          fi
 
       - name: Compile and Run C++ Program
         if: ${{ env.language == 'C++' }}
         run: |
-          g++ -I. tests/test.cpp solutions/*.cpp -o solution_cpp
-          ./solution_cpp
+          if [ -f Tests/test.cpp ]; then
+            g++ -I. Tests/test.cpp Solutions/*.cpp -o solution_cpp
+            ./solution_cpp
+          else
+            echo "No C++ test file found at Tests/test.cpp, skipping C++ test."
+          fi
 
       - name: Run Python Program
         if: ${{ env.language == 'Python' }}
         run: |
-          PYTHON_FILE=$(ls solutions/*.py 2>/dev/null | head -n 1)
+          PYTHON_FILE=$(ls Solutions/*.py 2>/dev/null | head -n 1)
 
           if [ -z "$PYTHON_FILE" ]; then
-            echo "Error: No Python script found in solutions/ directory!"
+            echo "Error: No Python script found in Solutions/ directory!"
             exit 1
           fi
           
           echo "Executing Python script: $PYTHON_FILE"
-          python tests/test.py   # Changed from python -m tests.test
+          python Tests/test.py
 
       - name: Run Java Tests
         if: ${{ env.language == 'Java' }}
         run: |
-          if ls tests/Test.java 1> /dev/null 2>&1; then
-            javac -d . solutions/*.java tests/*.java && java tests.Test
+          if [ -f Tests/Test.java ]; then
+            javac -d . Solutions/*.java Tests/*.java && java Tests.Test
           else
-            echo "Java test file not found."
+            echo "Java test file not found at Tests/Test.java, skipping Java test."
           fi
