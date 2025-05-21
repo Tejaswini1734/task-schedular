@@ -10,6 +10,7 @@ int leastInterval(vector<char>& tasks, int n) {
     int idle = max * n;
     for (int i = 24; i >= 0 && freq[i] > 0; i--) {
         idle -= min(freq[i], max);
+        
     }
     return idle > 0 ? tasks.size() + idle : tasks.size();
 }
