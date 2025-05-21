@@ -4,71 +4,73 @@ on:
   push:
     paths:
       - 'solutions/**'
-      - 'tests/**'
+  pull_request:
+    paths:
+      - 'solutions/**'
 
 jobs:
-  run-tests:
+  test:
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Get changed solution files
-      id: changes
+    - name: Check how many solution files changed
+      id: check_files
       run: |
         changed_files=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} -- solutions/)
+        echo "Changed solution files:"
         echo "$changed_files"
         count=$(echo "$changed_files" | wc -l)
-        echo "count=$count" >> $GITHUB_OUTPUT
-        echo "changed_files=$changed_files" >> $GITHUB_OUTPUT
+        echo "count=$count" >> "$GITHUB_ENV"
+        echo "changed_files=$changed_files" >> "$GITHUB_ENV"
+        if [ "$count" -gt 1 ]; then
+          echo "Error: Multiple Solution codes Changed at a time and do not Run Tests"
+          exit 1
+        fi
+        if [ "$count" -eq 0 ]; then
+          echo "No solution files changed. Skipping tests."
+          exit 0
+        fi
 
-    - name: Error for multiple or no files
-      if: steps.changes.outputs.count != '1'
+    - name: Set language variable
+      id: detect_language
       run: |
-        echo "Error: Multiple or no solution files changed. Aborting."
-        exit 1
-
-    - name: Set language
-      id: lang
-      run: |
-        file="${{ steps.changes.outputs.changed_files }}"
-        if [[ "$file" == *".c" ]]; then
-          echo "lang=c" >> $GITHUB_OUTPUT
-        elif [[ "$file" == *".cpp" ]]; then
-          echo "lang=cpp" >> $GITHUB_OUTPUT
-        elif [[ "$file" == *".py" ]]; then
-          echo "lang=python" >> $GITHUB_OUTPUT
-        elif [[ "$file" == *".java" ]]; then
-          echo "lang=java" >> $GITHUB_OUTPUT
+        file=$(echo "$changed_files")
+        echo "Changed file: $file"
+        if [[ $file == *.c ]]; then
+          echo "language=c" >> "$GITHUB_ENV"
+        elif [[ $file == *.cpp ]]; then
+          echo "language=cpp" >> "$GITHUB_ENV"
+        elif [[ $file == *.java ]]; then
+          echo "language=java" >> "$GITHUB_ENV"
+        elif [[ $file == *.py ]]; then
+          echo "language=python" >> "$GITHUB_ENV"
         else
-          echo "Unknown file type"
+          echo "Unsupported language"
           exit 1
         fi
 
-    - name: Run C tests
-      if: steps.lang.outputs.lang == 'c'
+    - name: Run tests for C
+      if: env.language == 'c'
       run: |
-        sudo apt update
-        sudo apt install -y gcc
-        gcc solutions/solution.c tests/test.c -o test_c
-        ./test_c
+        gcc solutions/solution.c tests/test.c -o test
+        ./test
 
-    - name: Run C++ tests
-      if: steps.lang.outputs.lang == 'cpp'
+    - name: Run tests for C++
+      if: env.language == 'cpp'
       run: |
-        sudo apt update
-        sudo apt install -y g++
-        g++ solutions/solution.cpp tests/test.cpp -o test_cpp
-        ./test_cpp
+        g++ solutions/solution.cpp tests/test.cpp -o test
+        ./test
 
-    - name: Run Python tests
-      if: steps.lang.outputs.lang == 'python'
-      run: |
-        python3 tests/test.py
-
-    - name: Run Java tests
-      if: steps.lang.outputs.lang == 'java'
+    - name: Run tests for Java
+      if: env.language == 'java'
       run: |
         javac solutions/solution.java tests/test.java
         java -cp solutions:tests Main
+
+    - name: Run tests for Python
+      if: env.language == 'python'
+      run: |
+        python3 tests/test.py
