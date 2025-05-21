@@ -1,0 +1,79 @@
+name: Run Tests
+
+on:
+  push:
+    paths:
+      - 'Solutions/**'
+      - 'Tests/**'
+      - '.github/workflows/test.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Check how many solution files changed
+        id: check_changed
+        run: |
+          changed_files=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} -- solutions/)
+          echo "Changed solution files:"
+          echo "$changed_files"
+          count=$(echo "$changed_files" | wc -l)
+          echo "::set-output name=count::$count"
+          if [ "$count" -gt 1 ]; then
+            echo "Error: Multiple Solution codes Changed at a time and do not Run Tests"
+            exit 1
+          fi
+          if [ "$count" -eq 0 ]; then
+            echo "No solution files changed. Skipping tests."
+            exit 0
+          fi
+
+      - name: Set language variable
+        id: set_lang
+        run: |
+          changed_files=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} -- solutions/)
+          file=$(echo "$changed_files" | head -n 1)
+          echo "Changed solution file: $file"
+          if [[ "$file" == *.java ]]; then
+            echo "::set-output name=lang::java"
+          elif [[ "$file" == *.py ]]; then
+            echo "::set-output name=lang::python"
+          elif [[ "$file" == *.c ]]; then
+            echo "::set-output name=lang::c"
+          elif [[ "$file" == *.cpp ]]; then
+            echo "::set-output name=lang::cpp"
+          else
+            echo "Unknown language extension. Exiting."
+            exit 1
+          fi
+
+      - name: Run tests for Java
+        if: steps.set_lang.outputs.lang == 'java'
+        run: |
+          echo "Running Java tests"
+          javac solutions/solution.java tests/test.java
+          java -cp solutions:tests Test
+
+      - name: Run tests for Python
+        if: steps.set_lang.outputs.lang == 'python'
+        run: |
+          echo "Running Python tests"
+          python3 tests/test.py
+
+      - name: Run tests for C
+        if: steps.set_lang.outputs.lang == 'c'
+        run: |
+          echo "Running C tests"
+          gcc solutions/solution.c tests/test.c -o test_c
+          ./test_c
+
+      - name: Run tests for C++
+        if: steps.set_lang.outputs.lang == 'cpp'
+        run: |
+          echo "Running C++ tests"
+          g++ solutions/solution.cpp tests/test.cpp -o test_cpp
+          ./test_cpp
