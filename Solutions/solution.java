@@ -10,7 +10,6 @@ class Solution {
         for (int i = 24; i >= 0 && freq[i] > 0; i--) {
             idle -= Math.min(freq[i], max);
         }
-        
         return idle > 0 ? tasks.length + idle : tasks.length;
     }
 }
