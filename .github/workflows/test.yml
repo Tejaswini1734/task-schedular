@@ -59,15 +59,17 @@ jobs:
             exit 1
           fi
 
-      - name: Compile and Run C Program
-        if: ${{ env.language == 'C' }}
-        run: |
-          if [ -f Tests/test.c ]; then
-            gcc Tests/test.c -o solution_c
-            ./solution_c
-          else
-            echo "No C test file found at Tests/test.c, skipping C test."
-          fi
+     - name: Compile and Run C Program
+     if: ${{ env.language == 'C' }}
+     run: |
+       if [ -f Tests/test.c ] && [ -f Solutions/solution.c ]; then
+         gcc Tests/test.c Solutions/solution.c -o solution_c
+         ./solution_c
+       else
+         echo "Missing C source or test file."
+         exit 1
+       fi
+
 
       - name: Compile and Run C++ Program
         if: ${{ env.language == 'C++' }}
