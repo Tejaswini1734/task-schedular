@@ -17,5 +17,4 @@ int leastInterval(char* tasks, int len, int n) {
     }
     int intervals = (max - 1) * (n + 1) + count_max;
     return intervals > len ? intervals : len;
-    
 }
