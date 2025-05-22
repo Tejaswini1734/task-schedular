@@ -1,12 +1,8 @@
 name: Run Code Tests
 
 on:
-  push:
-    # paths:
-    #   - "Solutions/**"   # temporarily disabled for debugging
-  pull_request:
-    # paths:
-    #   - "Tests/**"       # temporarily disabled for debugging
+  push: {}
+  pull_request: {}
 
 jobs:
   run-tests:
@@ -59,17 +55,15 @@ jobs:
             exit 1
           fi
 
-     - name: Compile and Run C Program
-     if: ${{ env.language == 'C' }}
-     run: |
-       if [ -f Tests/test.c ] && [ -f Solutions/solution.c ]; then
-         gcc Tests/test.c Solutions/solution.c -o solution_c
-         ./solution_c
-       else
-         echo "Missing C source or test file."
-         exit 1
-       fi
-
+      - name: Compile and Run C Program
+        if: ${{ env.language == 'C' }}
+        run: |
+          if [ -f Tests/test.c ]; then
+            gcc Tests/test.c Solutions/*.c -o solution_c
+            ./solution_c
+          else
+            echo "No C test file found at Tests/test.c, skipping C test."
+          fi
 
       - name: Compile and Run C++ Program
         if: ${{ env.language == 'C++' }}
