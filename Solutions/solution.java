@@ -11,4 +11,5 @@ class Solution {
         }
         return idle > 0 ? tasks.length + idle : tasks.length;
     }
+    
 }
