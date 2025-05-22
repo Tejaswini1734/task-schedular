@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <string.h>
 
-// Declare the solution function implemented in solution.c
 int leastInterval(char* tasks, int len, int n);
 
 int main() {
