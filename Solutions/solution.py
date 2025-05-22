@@ -1,6 +1,5 @@
 from collections import Counter
 
-
 def leastInterval(tasks, n):
     freq = list(Counter(tasks).values())
     max_freq = max(freq)
