@@ -1,7 +1,6 @@
 #include <vector>
 #include <algorithm>
 using namespace std;
-
 int leastInterval(vector<char>& tasks, int n) {
     vector<int> freq(26, 0);
     for (char t : tasks) freq[t - 'A']++;
