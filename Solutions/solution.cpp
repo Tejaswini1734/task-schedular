@@ -1,14 +1,19 @@
 #include <vector>
 #include <algorithm>
 using namespace std;
+
 int leastInterval(vector<char>& tasks, int n) {
     vector<int> freq(26, 0);
     for (char t : tasks) freq[t - 'A']++;
     sort(freq.begin(), freq.end());
-    int max = freq[25] - 1;
-    int idle = max * n;
-    for (int i = 24; i >= 0 && freq[i] > 0; i--) {
-        idle -= min(freq[i], max);
+    
+    int maxFreq = freq[25];
+    int idleSlots = (maxFreq - 1) * n;
+
+    for (int i = 24; i >= 0 && idleSlots > 0; i--) {
+        idleSlots -= min(freq[i], maxFreq - 1);
     }
-    return idle > 0 ? tasks.size() + idle : tasks.size();
+    idleSlots = max(0, idleSlots);
+
+    return tasks.size() + idleSlots;
 }
